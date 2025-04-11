@@ -82,12 +82,12 @@ WSGI_APPLICATION = 'project_1.wsgi.application'
 # PostreSQL
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'arnoDjangoRDS',
-        'USER': 'arnoDjango',
-        'PASSWORD': 'loki1976',
-        'HOST': 'database-1.cr2ysimg2a0g.us-east-1.rds.amazonaws.com',
-        'PORT': '5432',
+        'ENGINE': '',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
     }
 }
 # DATABASES = {
