@@ -11,6 +11,7 @@
     <h2>Hello, {{ request.user.username }}!</h2>
     <p>Your email: {{ profile.email|default:"Not set" }}</p>
 
+    <a href="{% url 'edit_profile' %}">Edit Email</a> |
     <a href="{% url 'logout' %}">Logout</a>
 
     
