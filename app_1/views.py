@@ -2,7 +2,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .forms import CustomUserCreationForm, ProfileForm
+from .forms import CustomUserCreationForm, UserEmailForm
 from django.shortcuts import render, redirect
 
 def home_view(request):
@@ -47,12 +47,12 @@ def dashboard_view(request):
 
 @login_required
 def edit_profile_view(request):
-    profile = request.user.profile
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile)
+        form = UserEmailForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             return redirect('dashboard')
     else:
-        form = ProfileForm(instance=profile)
+        form = UserEmailForm(instance=request.user)
+
     return render(request, 'app_1/edit_profile.html', {'form': form})
