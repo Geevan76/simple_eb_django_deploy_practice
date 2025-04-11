@@ -54,27 +54,33 @@ This guide captures the full step-by-step development and deployment process of 
 
 ## 🔜 UPCOMING TASKS
 
-### 8. **Static File Handling with S3**
+### 8. **Secure RDS Credentials with Environment Variables**
+- Install `django-environ`
+- Create a `.env` file and move all sensitive data there (RDS name, user, password, host)
+- Update `settings.py` to load values from `.env`
+- Configure Elastic Beanstalk environment variables via EB console or `.ebextensions`
+- Test locally and on EB to confirm environment variables are working
+
+### 9. **Static File Handling with S3**
 - Configure `django-storages`
 - Push static files to S3
 - Set `STATIC_URL` to S3 bucket URL
 - Test rendering in deployed app
+- Move S3 config vars into `.env` and EB environment settings
 
-### 9. **Media File Support (Profile Image Uploads)**
+### 10. **Media File Support (Profile Image Uploads)**
 - Add `ImageField` to `Profile`
 - Upload to S3
 - Set default profile image
 - Update dashboard to display image
 - Update form to allow image upload
 
-### 10. **Styling and UI Polish**
+### 11. **Styling and UI Polish**
 - Add base template with consistent navbar/footer
 - Use TailwindCSS or simple custom CSS
 - Refactor templates for layout, colors, spacing
 
-### 11. **Best Practices for Production**
-- Secure secrets using environment variables
-- Use `.env` file or EB config settings for RDS credentials
+### 12. **Best Practices for Production**
 - Set `DEBUG=False` in production
 - Define proper `ALLOWED_HOSTS`
 - Enable HTTPS on Elastic Beanstalk
@@ -115,4 +121,4 @@ This project is designed for repeated practice:
 - Keeps everything testable and deployable step-by-step
 - Now cleaned up to avoid duplicate fields (one `User.email`)
 
-Next up: connect static files to S3 🔜
+Next up: secure RDS credentials using `django-environ`, then connect static files to S3 🔜
