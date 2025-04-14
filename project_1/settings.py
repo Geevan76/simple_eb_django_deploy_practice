@@ -23,7 +23,7 @@ environ.Env.read_env(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = env('SECRET_KEY')
-SECRET_KEY = 'django-insecure-pd1i&fvhtj@va$7$1g!fsn9clwue5u(5d8)6$*nm#nky5z$v2w'
+# SECRET_KEY = 'django-insecure-pd1i&fvhtj@va$7$1g!fsn9clwue5u(5d8)6$*nm#nky5z$v2w'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -96,16 +96,16 @@ WSGI_APPLICATION = 'project_1.wsgi.application'
     
 # PostreSQL
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'arnoDjangoRDS',
-        'USER': 'arnoDjango',
-        'PASSWORD': 'loki1976',
-        'HOST': 'database-1.cr2ysimg2a0g.us-east-1.rds.amazonaws.com',
-        'PORT': '5432',
-    }  
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'arnoDjangoRDS',
+#         'USER': 'arnoDjango',
+#         'PASSWORD': 'loki1976',
+#         'HOST': 'database-1.cr2ysimg2a0g.us-east-1.rds.amazonaws.com',
+#         'PORT': '5432',
+#     }  
+# }
 
 # DATABASES = {
 #     'default': {
