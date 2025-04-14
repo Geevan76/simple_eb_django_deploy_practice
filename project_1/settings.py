@@ -102,7 +102,7 @@ DATABASES = {
         'NAME': 'arnoDjangoRDS',
         'USER': 'arnoDjango',
         'PASSWORD': 'loki1976',
-        'HOST': 'atabase-1.cr2ysimg2a0g.us-east-1.rds.amazonaws.com',
+        'HOST': 'database-1.cr2ysimg2a0g.us-east-1.rds.amazonaws.com',
         'PORT': '5432',
     }  
 }
