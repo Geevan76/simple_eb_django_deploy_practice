@@ -1,9 +1,30 @@
-<h2>Edit Profile</h2>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <h2>Edit Profile</h2>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-</form>
+    <div class="profile-container">
+        <img src="{{ request.user.profile.profile_pic.url }}" alt="Current Profile Picture" class="profile-image">
+    </div>
 
-<p><a href="{% url 'dashboard' %}">Back to Dashboard</a></p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <h3>Update Email</h3>
+        {{ user_form.as_p }}
+        
+        <h3>Update Profile Picture</h3>
+        {{ profile_form.as_p }}
+        
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <p><a href="{% url 'dashboard' %}">Back to Dashboard</a></p>
+</body>
+</html>

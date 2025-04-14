@@ -10,7 +10,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['email']
+        fields = ['username', 'email']
         
         
 class UserEmailForm(forms.ModelForm):
@@ -19,7 +19,7 @@ class UserEmailForm(forms.ModelForm):
         fields = ['email']
         
         
-# class ProfileForm(forms.ModelForm):
-#     class Meta:
-#         model = Profile
-#         fields = ['email']
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['profile_pic']

@@ -1,19 +1,22 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My App</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
-
     <h1>Dashboard</h1>
     <h2>Hello, {{ request.user.username }}!</h2>
-    <p>Email: {{ request.user.email }}</p>
-
-    <a href="{% url 'edit_profile' %}">Edit Email</a> |
-    <a href="{% url 'logout' %}">Logout</a>
-
     
+    <div class="profile-container">
+        <img src="{{ request.user.profile.profile_pic.url }}" alt="Profile Picture" class="profile-image">
+        <p>Email: {{ request.user.email }}</p>
+    </div>
+
+    <a href="{% url 'edit_profile' %}">Edit Profile</a> |
+    <a href="{% url 'logout' %}">Logout</a>
 </body>
 </html>
