@@ -1,124 +1,253 @@
-# Django Project Deployment to AWS (Step-by-Step)
+# Django User Authentication and Profile Management with AWS S3 Integration
 
-This guide captures the full step-by-step development and deployment process of a Django project, using AWS services such as Elastic Beanstalk (EB), RDS, and (upcoming) S3 for static/media files.
+This project demonstrates how to build a Django web application with user authentication, profile management, and AWS S3 integration for static and media file storage. The guide is structured to help developers understand each component and its purpose.
 
----
+## Table of Contents
+1. [Project Setup](#project-setup)
+2. [User Authentication](#user-authentication)
+3. [Profile Management](#profile-management)
+4. [Static and Media Files](#static-and-media-files)
+5. [AWS S3 Integration](#aws-s3-integration)
+6. [Development vs Production Settings](#development-vs-production-settings)
+7. [Common Issues and Solutions](#common-issues-and-solutions)
 
-## ✅ COMPLETED STEPS
+## Project Setup
 
-### 1. **Initialize Django Project**
-- Created a fresh Django project and app (e.g., `app_1`).
-- Verified homepage loads with minimal routing.
-
-### 2. **Authentication System (Barebones)**
-- Built using Django's built-in `User` model and `UserCreationForm`.
-- Function-based views used for:
-  - Register (`/register/`)
-  - Login (`/login/`)
-  - Logout (`/logout/`)
-  - Dashboard (`/dashboard/`)
-- Auto-login after registration
-- Minimal templates under `app_1/templates/app_1/`
-
-### 3. **Edit Profile Using Only User.email**
-- Removed `email` from the `Profile` model
-- Created `UserEmailForm` that directly edits `User.email`
-- Simplified `edit_profile_view` to use `UserEmailForm`
-- Ensured email is now consistent between user and admin view
-
-### 4. **Switched from SQLite to RDS (PostgreSQL)**
-- Installed `psycopg2-binary`
-- Updated `DATABASES` in `settings.py` to point to AWS RDS
-- Ran migrations + created superuser
-- Tested full app against RDS
-
-### 5. **Deployment to Elastic Beanstalk**
-- Ran `eb init` and `eb create`
-- Used `eb deploy --staged` for deployment without requiring Git commits
-- App now runs on AWS EB and connects to RDS backend
-
-### 6. **Schema Fix via pgAdmin**
-- Connected to RDS using pgAdmin
-- Manually added missing `email` column via SQL:
-  ```sql
-  ALTER TABLE app_1_profile ADD COLUMN email varchar(254);
-  ```
-- Verified `/dashboard/` now loads correctly
-
-### 7. **Refactored to Use Only One Email Source**
-- Removed `Profile.email` field and migration
-- Created a single `UserEmailForm` that updates `User.email`
-- Verified edit form and admin now reflect the same value
-
----
-
-## 🔜 UPCOMING TASKS
-
-### 8. **Secure RDS Credentials with Environment Variables**
-- Install `django-environ`
-- Create a `.env` file and move all sensitive data there (RDS name, user, password, host)
-- Update `settings.py` to load values from `.env`
-- Configure Elastic Beanstalk environment variables via EB console or `.ebextensions`
-- Test locally and on EB to confirm environment variables are working
-
-### 9. **Static File Handling with S3**
-- Configure `django-storages`
-- Push static files to S3
-- Set `STATIC_URL` to S3 bucket URL
-- Test rendering in deployed app
-- Move S3 config vars into `.env` and EB environment settings
-
-### 10. **Media File Support (Profile Image Uploads)**
-- Add `ImageField` to `Profile`
-- Upload to S3
-- Set default profile image
-- Update dashboard to display image
-- Update form to allow image upload
-
-### 11. **Styling and UI Polish**
-- Add base template with consistent navbar/footer
-- Use TailwindCSS or simple custom CSS
-- Refactor templates for layout, colors, spacing
-
-### 12. **Best Practices for Production**
-- Set `DEBUG=False` in production
-- Define proper `ALLOWED_HOSTS`
-- Enable HTTPS on Elastic Beanstalk
-
----
-
-## ✅ Folder Structure Summary (for Practice)
-
+### Initial Setup
 ```bash
-StartFromScratch/
-├── app_1/
-│   ├── templates/
-│   │   └── app_1/
-│   │       ├── home.html
-│   │       ├── login.html
-│   │       ├── register.html
-│   │       ├── dashboard.html
-│   │       ├── logged_out.html
-│   │       └── edit_profile.html
-│   ├── views.py
-│   ├── models.py
-│   ├── urls.py
-│   ├── forms.py
-│   ├── signals.py
-├── manage.py
-├── requirements.txt
-├── .ebextensions/
-├── .ebignore
-└── settings.py
+# Create a virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# On Windows:
+venv\Scripts\activate
+# On Unix or MacOS:
+source venv/bin/activate
+
+# Install required packages
+pip install django django-environ boto3 django-storages pillow
+
+# Create Django project
+django-admin startproject project_1
+
+# Create Django app
+python manage.py startapp app_1
 ```
 
----
+### Project Structure
+```
+project_root/
+│
+├── project_1/                 # Main project directory
+│   ├── settings.py           # Project settings
+│   ├── urls.py               # Main URL configuration
+│   └── wsgi.py              # WSGI configuration
+│
+├── app_1/                    # Main application
+│   ├── models.py            # Database models
+│   ├── views.py             # View functions
+│   ├── forms.py             # Form definitions
+│   ├── urls.py              # App URL configuration
+│   └── templates/           # HTML templates
+│       └── app_1/
+│           ├── home.html
+│           ├── dashboard.html
+│           └── edit_profile.html
+│
+├── static/                   # Static files directory
+│   ├── css/
+│   │   └── styles.css
+│   └── images/
+│       └── default.jpg
+│
+├── manage.py                 # Django management script
+└── requirements.txt         # Project dependencies
+```
 
-## ✅ Summary
-This project is designed for repeated practice:
-- Starts simple (barebones auth)
-- Gradually integrates real-world services (RDS, S3)
-- Keeps everything testable and deployable step-by-step
-- Now cleaned up to avoid duplicate fields (one `User.email`)
+## User Authentication
 
-Next up: secure RDS credentials using `django-environ`, then connect static files to S3 🔜
+### Models (models.py)
+```python
+from django.db import models
+from django.contrib.auth.models import User
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    profile_pic = models.ImageField(null=True, blank=True, default='default.jpg', upload_to='')
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+```
+
+### Why OneToOneField?
+- Creates a one-to-one relationship between User and Profile
+- Each user has exactly one profile and vice versa
+- Allows extending User model without modifying Django's built-in User model
+- Maintains database integrity with CASCADE deletion
+
+### Forms (forms.py)
+```python
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from .models import Profile
+
+class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+
+class UserEmailForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email']
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['profile_pic']
+```
+
+### Why Custom Forms?
+- Extends Django's built-in forms for customization
+- Separates concerns between user data and profile data
+- Enables form validation and clean data handling
+- Provides structured way to handle file uploads
+
+## Static and Media Files
+
+### Settings Configuration
+```python
+# Static files configuration
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files configuration
+MEDIA_URL = '/images/'
+MEDIA_ROOT = BASE_DIR / 'static/images'
+```
+
+### Why These Settings?
+- STATIC_URL: URL prefix for serving static files
+- STATICFILES_DIRS: Where Django looks for static files
+- STATIC_ROOT: Where collectstatic command collects files
+- MEDIA_URL/ROOT: Similar concept for user-uploaded files
+
+## AWS S3 Integration
+
+### AWS Setup
+1. Create an S3 bucket
+2. Configure IAM user with appropriate permissions
+3. Get access keys for authentication
+
+### Settings Configuration
+```python
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_FILE_OVERWRITE = False
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+}
+```
+
+### Why Use S3?
+- Scalable storage solution
+- Reliable content delivery
+- Separates storage from application servers
+- Cost-effective for growing applications
+
+## Development vs Production Settings
+
+### Using Environment Variables
+```python
+import environ
+
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+environ.Env.read_env()
+
+# Use environment variables
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG')
+```
+
+### Why Environment Variables?
+- Keeps sensitive data out of version control
+- Enables different configurations per environment
+- Follows security best practices
+- Makes deployment more flexible
+
+## Common Issues and Solutions
+
+### Static Files Not Loading
+1. Check STATIC_ROOT and STATIC_URL settings
+2. Run python manage.py collectstatic
+3. Verify AWS credentials if using S3
+4. Check file permissions
+
+### Profile Picture Upload Issues
+1. Verify MEDIA_ROOT exists
+2. Check file upload_to path in model
+3. Ensure form has enctype="multipart/form-data"
+4. Verify S3 bucket permissions
+
+### Database Migration Issues
+1. Make migrations: `python manage.py makemigrations`
+2. Apply migrations: `python manage.py migrate`
+3. Check for conflicting migrations
+4. Consider using --fake flag if needed
+
+## Version Control Best Practices
+
+### Branch Management
+```bash
+# Create feature branch
+git checkout -b feature/profile-pictures
+
+# Stage changes
+git add .
+
+# Commit changes
+git commit -m "Add profile picture feature"
+
+# Push to remote
+git push -u origin feature/profile-pictures
+```
+
+### Why Branch?
+- Isolates feature development
+- Enables parallel development
+- Makes code review easier
+- Simplifies rollback if needed
+
+## Deployment Checklist
+
+1. Set DEBUG=False in production
+2. Configure proper ALLOWED_HOSTS
+3. Use secure HTTPS connections
+4. Set up proper static file serving
+5. Configure database settings
+6. Set up proper logging
+7. Review security settings
+
+## Contributing
+
+Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE.md file for details
